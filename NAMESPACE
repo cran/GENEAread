@@ -1,0 +1,40 @@
+# Default NAMESPACE created by R
+# Remove the previous line if you edit this file
+
+# Export all names
+#exportPattern(".")
+#
+#
+
+import("stats")
+
+importFrom("graphics", "Axis", "axis", "barplot", "hist", "par", "plot",
+           "plot.default")
+
+
+export(read.bin,header.info,get.intervals, stft, convert.time, parse.time, axis.GRtime, format.GRtime, plot.AccData, print.VirtAccData,  epoch.apply, svm, epoch.mean, epoch.sd, epoch.median, epoch.mad, epoch.autocor, epoch.quantile, hanning.window, uniform.window, as.GRtime)
+
+S3method(Axis, GRtime)
+S3method(print, GRtime)
+S3method(Ops, GRtime)
+S3method(c, GRtime)
+S3method(Summary, GRtime)
+S3method(Axis, GRtime)
+S3method(pretty, GRtime)
+S3method("[", GRtime)
+
+S3method(print, AccData)
+S3method("[", AccData)
+S3method("$", AccData)
+S3method(c, AccData)
+S3method(dim, AccData)
+S3method(summary, AccData)
+
+S3method(print, stft)
+S3method(plot, stft)
+
+
+# Import all packages listed as Imports or Depends
+import(
+  bitops
+)
