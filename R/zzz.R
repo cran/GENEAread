@@ -1,4 +1,4 @@
-.First.lib <-function(lib,pkg)
+.onAttach <-function(lib,pkg)
 {
 ver <- read.dcf(file.path(lib, pkg, "DESCRIPTION"), "Version")
      ver <- as.character(ver)	
@@ -6,13 +6,5 @@ ver <- read.dcf(file.path(lib, pkg, "DESCRIPTION"), "Version")
 options(digits=12)
 text = paste("GENEAread", ver, "loaded\n")
 packageStartupMessage(text)
-
-##compile bapply and so on if we have a compiler
-#require(compiler)
-#if (exists("cmpfun")){
-#bapply.basic <- cmpfun(bapply.basic)
-#bapply <- cmpfun(bapply)
-#expand <- cmpfun(expand)
-#}
 
 }

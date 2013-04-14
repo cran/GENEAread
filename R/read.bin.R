@@ -79,6 +79,8 @@ pos.rec1 <- firstpage <- npages <- t1c <- t1midnight <- pos.inc<-headlines<- NA
 
 #get header and calibration info using header.info.
 header = header.info(binfile, more = T)
+commasep = unlist(header)[17] == ","   #decimal seperator is comma?
+
 H = attr(header, "calibration")
 for (i in 1:length(H)) assign(names(H)[i], H[[i]])
 
@@ -222,12 +224,12 @@ if (npages > 10000) blocksize = 10000
 invisible(gc()) # garbage collect
 if (mmap.load) {
 #function to get numbers from ascii codes
-numstrip <- function(dat, size = 4){
-apply(matrix(dat, size), 2, function(t) as.numeric(rawToChar(as.raw(t[t != 58]))))
+numstrip <- function(dat, size = 4, sep = "." ){
+
+apply(matrix(dat, size), 2, function(t) as.numeric(sub(sep, ".", rawToChar(as.raw(t[t != 58])), fixed = TRUE)))
 }
 
 
-##############################################freqchars = nchar(freq)
 offset =  pos.rec1 - 2#findInterval(58,cumsum((mmapobj[1:3000] == 13)))+ 1 #TODO
 rec2 = offset + pos.inc
 
@@ -250,7 +252,10 @@ pagerefs = c(pagerefs, grepRaw("Recorded Data", textobj[curr + 1: min(blocksize2
 curr = curr + blocksize2
 if (length(pagerefs) >= max(index)) break
 }
-if (curr >= length(textobj)) pagerefs = c(pagerefs, length(textobj)  -1)
+if (curr >= length(textobj)){    # pagerefs = c(pagerefs, length(textobj)  -1)
+pagerefs = c(pagerefs, length(textobj) - grepRaw("[0-9A-Z]",rev(textobj[max(pagerefs):length(textobj)]))+2)
+  
+}
 if (verbose) cat("Calculated page references... \n")
 munmap(textobj)
 invisible(gc()) # garbage collect
@@ -270,6 +275,7 @@ mmap.load = FALSE
 
 #getindex gives either the datavector, or the pos after the tail of the record
 if (is.null(pagerefs)){
+        print("WARNING: Estimating data page references. This can fail if data format is unusual!") #better warn about this, it can come up
 	digitstring = cumsum(c(offset,10*(pos.inc), 90 *(pos.inc + 1) , 900 *( pos.inc +2 ), 9000*(pos.inc +3) , 90000*(pos.inc +4) , 900000*(pos.inc +5), 9000000 * (pos.inc + 6)))
 	digitstring[1] = digitstring[1] + pos.inc #offset a bit since 10^0 = 1
 	getindex = function(pagenumbers, raw = F   ){
@@ -355,8 +361,6 @@ if (exists("fc2")) close(fc2)
 if (exists("mmapobj")) munmap(mmapobj)
 #todo...
 Fulldat = timestamps[index]
-#Fulldat = rep(timestamps[index], each = length(freqseq)) + freqseq
-#if (!is.null(downsample)) Fulldat = bapply.basic( Fulldat, downsample, function(t) t[downsampleoffset])
 if (verbose) cat("Virtually loaded", length(Fulldat)*length(freqseq)/downsample, "records at", round(freq/downsample,2), "Hz (Will take up approx ", round(56 * as.double(length(Fulldat) * length(freqseq)/downsample )/1000000) ,"MB of RAM)\n")
 if (verbose) cat(format.GRtime(Fulldat[1], format = "%y-%m-%d %H:%M:%OS3 (%a)")," to ", format.GRtime(tail(Fulldat,1) + nobs /freq,format = "%y-%m-%d %H:%M:%OS3 (%a)"), "\n")
 output = list(data.out = Fulldat, page.timestamps = timestampsc[index.orig], freq= as.double(freq)/downsample , filename =tail(strsplit(binfile, "/")[[1]],1), page.numbers = index.orig, call = argl, nobs = floor(length(freqseq)/downsample) , pagerefs = pagerefs, header = header)
@@ -376,14 +380,16 @@ bseq = (index - lastread -1 ) * reclength
 	lastread = max(index)
 if (do.volt){
 vdata = tmpd[bseq + position.volts]
-voltages = c(voltages, as.numeric(substring(vdata, 17, nchar(vdata))))
+if (commasep) vdata = sub(",", ".", vdata, fixed = TRUE)
+voltages = c(voltages, as.numeric(substring(vdata, 17, nchar(vdata)))) 
 }
 	if (is.null(downsample)){
 	    data <- strsplit(paste(tmpd[ bseq + position.data], collapse = ""), "")[[1]]
 
 	    if (do.temp) {	
         	tdata <- tmpd[bseq + position.temperature]
-	        temp <- as.numeric(substring(tdata, 13, nchar(tdata)))
+                if (commasep) tdata = sub(",", ".", tdata, fixed = TRUE)
+	        temp <- as.numeric(substring(tdata, 13, nchar(tdata))) 
 	        temperature <- rep(temp, each = nobs)
 	    }
     # line below added for future beneficial gc
@@ -398,7 +404,8 @@ voltages = c(voltages, as.numeric(substring(vdata, 17, nchar(vdata))))
 		 data <- strsplit(paste(tmpd[ bseq + position.data], collapse = ""), "")[[1]]
 	    if (do.temp) {	
         	tdata <- tmpd[bseq + position.temperature]
-	        temp <- as.numeric(substring(tdata, 13, nchar(tdata)))
+                if (commasep) tdata = sub(",", ".", tdata, fixed = TRUE)
+	        temp <- as.numeric(substring(tdata, 13, nchar(tdata))) 
 	        temperature <- rep(temp, each = nobs)
 	    }
     # line below added for future beneficial gc
@@ -422,9 +429,22 @@ if (do.temp){
 #read from file
 tmp = mmapobj[getindex(index)]
 proc.file = convert.intstream(tmp)
+# remember that getindex(id , raw = T) gives the byte offset after the end of
+# each data record. Seems like battery voltages and temperatures can vary in
+# terms of the number of bytes they take up... which is annoying
+# new plan:
+# try and discover where the byte offsets are...
+pageindices = getindex(index, raw = T)
+firstrec = as.raw(mmapobj[pageindices[1]:pageindices[2]])
+a = grepRaw("Temperature:", firstrec)
+b = grepRaw(ifelse(commasep, ",", "."), firstrec, offset = a, fixed = TRUE)
+c = grepRaw("Battery voltage:", firstrec, offset = b)
+d = grepRaw("Device", firstrec, offset = c)
+tind = (b-2):(c-2) - length(firstrec)
+vind = (c+16):(d-2) - length(firstrec)
 
 if (do.temp){
-temperature = rep(numstrip(mmapobj[rep(getindex(index, raw  = T), each = 4)- 3680 - 4:1], 4), each = nobs)
+temperature = rep(numstrip(mmapobj[rep(pageindices, each = length(tind)) + tind ], size = length(tind), sep = ifelse(commasep, ",", ".") ), each = nobs) #lets hope this doesn't slow things too much
 }
     		nn <- rep(timestamps[index], each = length(freqseq)) + freqseq
 	if (!is.null(downsample)){
@@ -438,7 +458,7 @@ if (do.temp){
 	downsampleoffset = downsample - (nobs*blocksize - downsampleoffset  )%% downsample 
 }
 if (do.volt){
-voltages = c(voltages, numstrip(mmapobj[rep(getindex(index, raw  = T), each = 6)- 3656 - 6:1 ], 6) )
+voltages = c(voltages, numstrip(mmapobj[rep(pageindices, each = length(vind)) + vind ], size = length(vind) , sep = ifelse(commasep, ",", ".")) ) 
 }
 
 
