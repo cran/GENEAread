@@ -2,6 +2,12 @@
 \title{News for Package \pkg{GENEAread}}
 \newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 2.0.1}{
+\itemize{
+	\item Changed Manuals to be created using ROxygen2. Creation of new recalibration function.
+}
+}
+
 \section{Changes in version 1.1.1}{
 \itemize{
 	\item Switched startup to onAttach.
@@ -18,7 +24,7 @@
 \section{Changes in version 1.0}{
 \itemize{
 	\item Many changes and alterations and documentation.
-	\item Renamed to GENEAread from ReadGenea 
+	\item Renamed to GENEAread from ReadGenea
 	\item Version submitted to CRAN
 }
 }
@@ -52,10 +58,10 @@
 
 \section{Changes in version 2.1(RG)}{
  \itemize{
-    \item Added downsampling and block based loading of data (for very large datasets)    
+    \item Added downsampling and block based loading of data (for very large datasets)
     \item Added specification of start and end by proportions of data
     \item Some speed improvements/optimisations
-    \item Experimental implementations of stft, GFLasso and FLasso.    
+    \item Experimental implementations of stft, GFLasso and FLasso.
 }
 }
 

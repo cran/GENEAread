@@ -1,19 +1,27 @@
 Package: GENEAread
 Type: Package
-Title: Package For Reading Binary files
-Version: 1.1.1
-Date: 14/04/2013
-Author: Zhou Fang <zhou@activinsights.co.uk>
-Maintainer: Joss Langford <Joss@activinsights.co.uk>
-Description: Functions and analytics for GENEA-compatible accelerometer
-        data into R objects. See topic 'GENEAread' for an introduction
-        to the package.
-License: GPL
-LazyLoad: yes
-ByteCompile: yes
-Depends: bitops
-Suggests: mmap, MASS
-Packaged: 2013-04-23 20:40:00 UTC; zfang
-NeedsCompilation: no
+Title: Read GENEA Binary Files
+Version: 2.0.2
+Date: 2018-07-03
+Authors@R: c(
+    person("Zhou", "Fang", role = "aut", email = "ccampbell@mango-solutions.com"),
+    person("Joss", "Langford", role = "aut", email = "joss@activinsights.co.uk"),
+    person("Charles", "Sweetland", role = c("aut","cre"), email = "charles@sweetland-solutions.co.uk"))
+Maintainer: Charles Sweetland <charles@sweetland-solutions.co.uk>
+Description: Functions and analytics for GENEA-compatible accelerometer data into R objects. See topic 'GENEAread' for an introduction to the package.
+License: GPL-2 | GPL-3
+Encoding: UTF-8
+LazyData: true
+Depends: bitops, mmap, GGIR
+Suggests: MASS, methods
+RoxygenNote: 6.0.1
+NeedsCompilation: yes
+Packaged: 2018-07-03 14:59:20 UTC; ActivInsights
+Collate: 'AccData.r' 'Recalibrate.R' 'convert.time.R' 'epoch.R'
+        'get.intervals.r' 'GRtime.r' 'header.info.R' 'parse.time.R'
+        'read.bin.R' 'stftmod.R' 'svm.R' 'util.R'
+Author: Zhou Fang [aut],
+  Joss Langford [aut],
+  Charles Sweetland [aut, cre]
 Repository: CRAN
-Date/Publication: 2013-04-23 22:15:52
+Date/Publication: 2018-07-03 16:40:04 UTC
