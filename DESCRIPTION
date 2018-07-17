@@ -1,8 +1,8 @@
 Package: GENEAread
 Type: Package
-Title: Read GENEA Binary Files
-Version: 2.0.2
-Date: 2018-07-03
+Title: Package for Reading Binary Files
+Version: 2.0.5
+Date: 2018-07-17
 Authors@R: c(
     person("Zhou", "Fang", role = "aut", email = "ccampbell@mango-solutions.com"),
     person("Joss", "Langford", role = "aut", email = "joss@activinsights.co.uk"),
@@ -16,7 +16,7 @@ Depends: bitops, mmap, GGIR
 Suggests: MASS, methods
 RoxygenNote: 6.0.1
 NeedsCompilation: yes
-Packaged: 2018-07-03 14:59:20 UTC; ActivInsights
+Packaged: 2018-07-17 19:20:02 UTC; ActivInsights
 Collate: 'AccData.r' 'Recalibrate.R' 'convert.time.R' 'epoch.R'
         'get.intervals.r' 'GRtime.r' 'header.info.R' 'parse.time.R'
         'read.bin.R' 'stftmod.R' 'svm.R' 'util.R'
@@ -24,4 +24,4 @@ Author: Zhou Fang [aut],
   Joss Langford [aut],
   Charles Sweetland [aut, cre]
 Repository: CRAN
-Date/Publication: 2018-07-03 16:40:04 UTC
+Date/Publication: 2018-07-17 19:40:02 UTC

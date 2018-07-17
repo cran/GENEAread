@@ -8,9 +8,10 @@
 \title{A package to process binary accelerometer output files.}
 \usage{
 read.bin(binfile, outfile = NULL, start = NULL, end = NULL,
-  verbose = TRUE, do.temp = TRUE, do.volt = TRUE, calibrate = TRUE,
-  downsample = NULL, blocksize, virtual = FALSE,
-  mmap.load = (.Machine$sizeof.pointer >= 8), pagerefs = TRUE, ...)
+  Use.Timestamps = FALSE, verbose = TRUE, do.temp = TRUE,
+  do.volt = TRUE, calibrate = TRUE, downsample = NULL, blocksize,
+  virtual = FALSE, mmap.load = (.Machine$sizeof.pointer >= 8),
+  pagerefs = TRUE, ...)
 }
 \arguments{
 \item{binfile}{A filename of a file to process.}
@@ -20,6 +21,8 @@ read.bin(binfile, outfile = NULL, start = NULL, end = NULL,
 \item{start}{Either: A representation of when in the file to begin processing, see Details.}
 
 \item{end}{Either: A representation of when in the file to end processing, see Details.}
+
+\item{Use.Timestamps}{To use timestamps as the start and end time values this has to be set to TRUE. (Default FALSE)}
 
 \item{verbose}{A boolean variable indicating whether some information should be printed during
 processing should be printed.}
@@ -160,6 +163,7 @@ If order or field names are changed in future .bin files, this function may have
 }
 
 \examples{
+requireNamespace("GENEAread")
 binfile = system.file("binfile/TESTfile.bin", package = "GENEAread")[1]
 #Read in the entire file, calibrated
 procfile<-read.bin(binfile)

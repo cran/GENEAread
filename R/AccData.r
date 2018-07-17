@@ -8,6 +8,7 @@
 #' @keywords datasets
 #' @seealso \code{read.bin}
 #' @examples
+#' requireNamespace("GENEAread")
 #' binfile  = system.file("binfile/TESTfile.bin", package = "GENEAread")[1]
 #' #Read in the entire file, calibrated
 #' procfile<-read.bin(binfile)

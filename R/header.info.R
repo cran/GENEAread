@@ -156,7 +156,7 @@ header.info <- function(binfile,
 
       if (exists("mmap", mode = "function")){
         # mmap: find start offset and shift
-        tmpd = mmap(binfile, char())
+        tmpd = mmap(binfile, char(), prot = mmapFlags("PROT_READ"))
         # did we mmap successfully?
         if (is.mmap(tmpd)){
           tmpd2 = tmpd[1:min(length(tmpd), 20000)]

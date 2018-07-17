@@ -12,6 +12,7 @@ Output of \code{\link{read.bin}}
 Accelerometer Data Output from read.bin function
 }
 \examples{
+requireNamespace("GENEAread")
 binfile  = system.file("binfile/TESTfile.bin", package = "GENEAread")[1]
 #Read in the entire file, calibrated
 procfile<-read.bin(binfile)

@@ -116,7 +116,6 @@ stft(procfile, type = "svm", reassign = FALSE, plot.it = TRUE, wtype = "uniform.
 obj = stft(procfile, type = "svm", quiet = TRUE)
 plot(obj, cex = 3, showmax = FALSE, mode = "pval")
 
-
 #example code
 plot(stft(subs(mag, 0.94,0.96), win = 1024, plot = F, coef = 512), zlog = T, log="y")
 plot(stft(subs(mag, 0.7,8), win = 1024, plot = F, coef = 512), zlog = T, log="y")

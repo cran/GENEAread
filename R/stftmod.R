@@ -108,7 +108,6 @@
 #'obj = stft(procfile, type = "svm", quiet = TRUE)
 #'plot(obj, cex = 3, showmax = FALSE, mode = "pval")
 #'
-#'
 #' #example code
 #' plot(stft(subs(mag, 0.94,0.96), win = 1024, plot = F, coef = 512), zlog = T, log="y")
 #' plot(stft(subs(mag, 0.7,8), win = 1024, plot = F, coef = 512), zlog = T, log="y")
@@ -568,10 +567,12 @@ stftcalc <- function(X,
   for (i in 0:numwin){
   	z[i+1, 1:win] <- (X[st:(st+win-1)] - mean(X[st:(st+win - 1)])* centre) * wincoef
   	y[i+1,] <- fft(z[i+1,] )
+
     if (reassign){
     	z[i+1, 1:win] <- (Xdel[st:(st+win-1)] - mean(Xdel[st:(st+win - 1)])* centre) * wincoef
     	ydel[i+1,] <- fft(z[i+1,] )
     }
+
     if (pvalues){
       temp = sample(X[st:(st + win - 1)])
       temp = (temp - mean(temp) * centre)*wincoef

@@ -52,6 +52,7 @@
 #' @param outfile An optional filename specifying where to save the processed data object.
 #' @param start Either: A representation of when in the file to begin processing, see Details.
 #' @param end Either: A representation of when in the file to end processing, see Details.
+#' @param Use.Timestamps To use timestamps as the start and end time values this has to be set to TRUE. (Default FALSE)
 #' @param verbose A boolean variable indicating whether some information should be printed during
 #' processing should be printed.
 #' @param do.temp A boolean variable indicating whether the temperature signal should be extracted
@@ -146,6 +147,7 @@
 #'
 #' @export
 #' @examples
+#' requireNamespace("GENEAread")
 #' binfile = system.file("binfile/TESTfile.bin", package = "GENEAread")[1]
 #' #Read in the entire file, calibrated
 #' procfile<-read.bin(binfile)
@@ -168,14 +170,14 @@
 #' #print(load("tmp.Rdata"))
 #' #print(processedfile)
 
-read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
+read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Timestamps = FALSE,
                       verbose = TRUE, do.temp = TRUE,do.volt = TRUE, calibrate = TRUE,
                       downsample = NULL, blocksize , virtual = FALSE,
                       mmap.load = (.Machine$sizeof.pointer >= 8), pagerefs = TRUE, ...){
 
     invisible(gc()) # garbage collect
 
-    # if (mmap.load) require(mmap) # Removing this line
+    requireNamespace("mmap")
 
     # optional argument initialization as NULL. Arguments assigned
     # if they appear in the function call.
@@ -198,7 +200,6 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
       }
     }
 
-
     #variables for positions and record lengths in file
     nobs <- 300
     reclength <- 10
@@ -214,6 +215,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
     commasep = unlist(header)[17] == ","   #decimal seperator is comma?
 
     H = attr(header, "calibration")
+
+    # Assigning out the variables from the header.info function
     for (i in 1:length(H)) assign(names(H)[i], H[[i]])
 
     if ((!exists("pos.rec1")) || (is.na(pos.rec1))) mmap.load = FALSE
@@ -246,6 +249,7 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
     timestamps <- seq(t1, by = timespan, length = npages)
     tnc <- timestampsc[npages]
     tn <- timestamps[npages]
+
     if (is.null(start)) {
       start <- 1
     }
@@ -253,37 +257,58 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
       end <- npages
     }
 
+    if (Use.Timestamps == TRUE){
+      # Entering a timestamp rather than a time needs to be explicit. and timestamps has to be entered as true.
+      if (is.numeric(start)){
+        start = findInterval(start - 0.5, timestamps, all.inside = T) #which(timestamps >= start-(0.5))[1]
+        t1 = timestamps[start+1]
+      } else{
+        stop(cat("Please enter the start as a numeric timestamp"))
+      }
 
-    #goal is to end up with start, end as page refs
-    if (is.numeric(start)) {
-      if ((start[1] > npages)) {
-        stop(cat("Please input valid start and end times between ",
-                 t1c, " and ", tnc, " or pages between 1 and ",
-                 npages, ".\n\n"), call. = FALSE)
-      } else if (start[1] < 1) {
-        #specify a proportional point to start
-        start = pmax(floor( start * npages),1)
+      if (is.numeric(end)){
+        end = findInterval(end, timestamps, all.inside = T) +1 #max(which(timestamps<= (end+0.5) ))
+      } else{
+        stop(cat("Please enter the start as a numeric timestamp"))
+      }
+
+    } else{
+      #goal is to end up with start, end as page refs
+      if (is.numeric(start)) {
+        if ((start[1] > npages)) {
+          stop(cat("Please input valid start and end times between ",
+                   t1c, " and ", tnc, " or pages between 1 and ",
+                   npages, ".\n\n"), call. = FALSE)
+        } else if (start[1] < 1) {
+          #specify a proportional point to start
+          start = pmax(floor( start * npages),1)
+        }
+      }
+
+      if (is.numeric(end)) {
+        if ((end[1] <= 1)) {
+          #specify a proportional point to end
+          end= ceiling(end * npages)
+        }
+        else {
+          end <- pmin(end, npages)
+        }
+      }
+
+      #parse times, including partial times, and times with day offsets
+      if (is.character(start)) {
+        start <- parse.time(start, format = "seconds", start = t1, startmidnight = t1midnight)
+        start = findInterval(start - 0.5, timestamps, all.inside = T) #which(timestamps >= start-(0.5))[1]
+        t1 = timestamps[start+1]
+      }
+
+      if (is.character(end)) {
+        end <- parse.time(end, format = "seconds", start = t1, startmidnight = t1midnight)
+        end = findInterval(end, timestamps, all.inside = T) +1 #max(which(timestamps<= (end+0.5) ))
       }
     }
-    if (is.numeric(end)) {
-      if ((end[1] <= 1)) {
-        #specify a proportional point to end
-        end= ceiling(end * npages)
-      }
-      else {
-        end <- pmin(end, npages)
-      }
-    }
-    #parse times, including partial times, and times with day offsets
-    if (is.character(start)) {
-      start <- parse.time(start, format = "seconds", start = t1, startmidnight = t1midnight)
-      start = findInterval(start - 0.5, timestamps, all.inside = T) #which(timestamps >= start-(0.5))[1]
-      t1 = timestamps[start+1]
-    }
-    if (is.character(end)) {
-      end <- parse.time(end, format = "seconds", start = t1, startmidnight = t1midnight)
-      end = findInterval(end, timestamps, all.inside = T) +1 #max(which(timestamps<= (end+0.5) ))
-    }
+
+
 
     index <-  NULL
     for (i in 1:length(start)){
@@ -373,7 +398,7 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
         pagerefs = NULL
       } else if (length(pagerefs) < max(index)){
         #calculate pagerefs!
-        textobj = mmap(binfile, char())
+        textobj = mmap(binfile, char(), prot = mmapFlags("PROT_READ"))
         if (is.mmap(textobj)){
           startoffset = max(pagerefs, offset) + pos.inc
           if (identical(pagerefs, TRUE)) pagerefs = NULL
@@ -403,7 +428,7 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
           warning("Failed to compute page refs")
         }
       }
-      mmapobj = mmap(binfile, uint8())
+      mmapobj = mmap(binfile, uint8(), prot=mmapFlags("PROT_READ"))
       if (!is.mmap(mmapobj)){
         warning("MMAP failed, switching to ReadLine. (Likely insufficient address space)")
         mmap.load = FALSE
@@ -441,10 +466,7 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
         }
       }
 
-    }
-
-    if (mmap.load != TRUE) {
-
+    } else{
       fc2 = file(binfile, "rt")
       #skip to start of data blocks
       #skip header
@@ -643,6 +665,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL,
       if (verbose)	setTxtProgressBar(pb, 100 *  blocknumber / numblocks)
 
     }
+
+    #### Changes up to here ####
     if (verbose) close(pb)
 
     freq = freq * nrow(Fulldat) / (nobs *  nstreams)
@@ -723,3 +747,18 @@ convert.intstream <- function(stream){
   light = floor(packet[4,] / 4 -> ltmp)
   rbind(packet[1:3,], light, (ltmp-light) >0.49)
 }
+
+
+#' utility function for checking timestamps
+#' @title Utility functions to be used within GENEAread
+#'
+#' @description To check the timestamps are of the correct format when using within read.bin
+#'
+#' @param x Time object passed to check class
+#'
+#' @keywords internal
+
+is.POSIXct <- function(x) inherits(x, "POSIXct")
+is.POSIXlt <- function(x) inherits(x, "POSIXlt")
+is.POSIXt <- function(x) inherits(x, "POSIXt")
+is.Date <- function(x) inherits(x, "Date")
