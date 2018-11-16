@@ -7,7 +7,7 @@
 \usage{
 ReCalibrate(datadir, outputdir, use.temp = TRUE, spherecrit = 0.3,
   minloadcrit = 72, printsummary = TRUE, chunksize = c(0.5),
-  windowsizes = c(60, 900, 3600), ...)
+  windowsizes = c(60, 900, 3600))
 }
 \arguments{
 \item{datadir}{The location of the directory/file containing GENEActiv binfile.}
@@ -28,11 +28,17 @@ error has not been reduced to under 0.01 g.}
 to specificy the size of chunks to be loaded as a fraction of a 12 hour period, e.g. 0.5 equals 6 hour chunks.
  The default is 1 (12 hrs). For machines with less than 4Gb of RAM memory a value below 1 is recommended.}
 
-\item{chunksize}{see \code{\link[GGIR]{g.getmeta}}}
+\item{chunksize}{number between 0.2 and 1 to specificy the size of chunks to be loaded as a fraction
+of a 12 hour period, e.g. 0.5 equals 6 hour chunks. The default is 1 (12 hrs).
+For machines with less than 4Gb of RAM memory a value below 1 is recommended.}
 
-\item{windowsizes}{see \code{\link[GGIR]{g.getmeta}}}
-
-\item{...}{see \code{\link[GGIR]{g.calibrate}} for more options}
+\item{windowsizes}{Three values to indicate the lengths of the windows as in c(window1,window2,window3):
+window1 is the short epoch length in seconds and by default 5 this is the time window over which
+acceleration and angle metrics are calculated, window2 is the long epoch length in seconds for which
+non-wear and signal clipping are defined, default 900. However, window3 is the window length of data used
+for non-wear detection and by default 3600 seconds. So, when window3 is larger than window2 we use
+overlapping windows, while if window2 equals window3 non-wear periods are assessed by non-overlapping
+windows.}
 }
 \value{
 Saves a calibrated binfile to an output folder

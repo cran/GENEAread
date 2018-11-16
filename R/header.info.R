@@ -85,7 +85,7 @@ header.info <- function(binfile,
   if (more){
     # grab calibration data etc as well
     calibration = list()
-    fc = file(binfile, "rt")
+    fc = file(binfile, "rt") # Removing the "rt" as this is varies the output. See https://stackoverflow.com/questions/52850323/scan-function-output-varies
 
     index = sort(c(ind.config + 4,
                    ind.calibdata + 1:8,
@@ -103,7 +103,7 @@ header.info <- function(binfile,
                           quiet = TRUE)[3],
                           c(1,2,5),
                           c(1, 3, 6))
-    calibration$tzone = ifelse(tmp[1] == "-", -1, 1) * (as.numeric(tmp[3]) + 60* as.numeric(tmp[2])) /60
+    calibration$tzone = ifelse(tmp[1] == "-", -1, 1) * (as.numeric(tmp[3]) + 60* as.numeric(tmp[2])) / 60
 
     index = diff(index) - 1
     for (sk in index[1:10]){
@@ -131,18 +131,21 @@ header.info <- function(binfile,
     t1 <- parse.time(t1, format = "seconds")
     inc = 1/freq
 
-    if (calibration$npages > 1){
-      t2 =  parse.time(substring(scan(fc,
-                                      skip = index[13],
-                                      what = "",
-                                      quiet = TRUE,
-                                      nlines = 1,
-                                      sep = "\n"),
-                                 11),
-                       format = "seconds")
-      freq = nobs/(t2 - t1)
-      inc = (t2-t1)/nobs
-    }
+    # Perhaps closing the file then opening again would work.
+
+    # Currently scan here outputs incorrect value.
+    # if (calibration$npages > 1){
+    #   t2 =  parse.time(substring(scan(fc,
+    #                                   skip = index[13],
+    #                                   what = "",
+    #                                   quiet = TRUE,
+    #                                   nlines = 1,
+    #                                   sep = "\n"),
+    #                              11),
+    #                    format = "seconds")
+    #   freq = nobs/(t2 - t1)
+    #   inc = (t2-t1)/nobs
+    # }
 
     calibration = c(calibration,
                     list(freq = freq,
@@ -183,4 +186,6 @@ header.info <- function(binfile,
     }
   return(info)
 }
+
+
 

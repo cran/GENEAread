@@ -4,9 +4,9 @@
 \alias{stftcalc}
 \title{calculate the fft components}
 \usage{
-stftcalc(X, win = 10, inc = win/2, coef = Inf, wtype = "hanning.window",
-  freq, centre = T, calc.null = F, pvalues = F, time = NULL,
-  reassign = T, quiet = F)
+stftcalc(X, win = 10, inc = win/2, coef = Inf,
+  wtype = "hanning.window", freq, centre = T, calc.null = F,
+  pvalues = F, time = NULL, reassign = T, quiet = F)
 }
 \arguments{
 \item{win}{Window size in number of recordings to use.}

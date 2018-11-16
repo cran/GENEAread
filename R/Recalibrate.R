@@ -17,16 +17,21 @@
 #' @param printsummary if TRUE will print a summary when done chunksize number between 0.2 and 1
 #' to specificy the size of chunks to be loaded as a fraction of a 12 hour period, e.g. 0.5 equals 6 hour chunks.
 #'  The default is 1 (12 hrs). For machines with less than 4Gb of RAM memory a value below 1 is recommended.
-#' @param chunksize   see \code{\link[GGIR]{g.getmeta}}
-#' @param windowsizes see \code{\link[GGIR]{g.getmeta}}
-#' @param ... see \code{\link[GGIR]{g.calibrate}} for more options
+#' @param chunksize number between 0.2 and 1 to specificy the size of chunks to be loaded as a fraction
+#' of a 12 hour period, e.g. 0.5 equals 6 hour chunks. The default is 1 (12 hrs).
+#' For machines with less than 4Gb of RAM memory a value below 1 is recommended.
+#' @param windowsizes Three values to indicate the lengths of the windows as in c(window1,window2,window3):
+#' window1 is the short epoch length in seconds and by default 5 this is the time window over which
+#' acceleration and angle metrics are calculated, window2 is the long epoch length in seconds for which
+#' non-wear and signal clipping are defined, default 900. However, window3 is the window length of data used
+#' for non-wear detection and by default 3600 seconds. So, when window3 is larger than window2 we use
+#' overlapping windows, while if window2 equals window3 non-wear periods are assessed by non-overlapping
+#' windows.
 #'
 #' @return Saves a calibrated binfile to an output folder
 #'
 #' @details Takes each binfile found in the data directory, calibrates according to the routine by Vincent Van Tee Hees
 #' and saves the calibrated file to the specificied output directory
-#'
-#' @importFrom GGIR g.calibrate
 #'
 #' @export
 #'
@@ -38,7 +43,7 @@
 
 
 ReCalibrate = function(datadir ,outputdir, use.temp = TRUE, spherecrit = 0.3, minloadcrit = 72,
-                       printsummary = TRUE, chunksize=c(0.5), windowsizes=c(60,900,3600), ...){
+                       printsummary = TRUE, chunksize=c(0.5), windowsizes=c(60,900,3600)){
     # Create new folder if there isnt an outputdirectory
     if (length(datadir) == 0) {
       if (length(datadir) == 0) {
@@ -72,12 +77,11 @@ ReCalibrate = function(datadir ,outputdir, use.temp = TRUE, spherecrit = 0.3, mi
 
     for (i in 1:length(fnames)){
 
-      Binfile = fnames[i]
-      setwd(datadir)
+      Binfile = file.path(paste0(datadir, fnames[i]))
 
       # Find the calibration values of the data.
-      C = g.calibrate(Binfile, use.temp = TRUE, spherecrit = 0.3, minloadcrit = 72,
-                      printsummary = TRUE, chunksize=c(0.5), windowsizes=c(60,900,3600), ...)
+      C = GENEActiv.calibrate(Binfile, use.temp = TRUE, spherecrit = 0.3, minloadcrit = 72,
+                              printsummary = TRUE, chunksize=c(0.5), windowsizes=c(60,900,3600))
 
       # Read in the current values -
       Lines=readLines(Binfile,-1) # Reads the bin file to the point where the calibration data is.

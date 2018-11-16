@@ -1,6 +1,5 @@
 
 #' @name stft
-#' @aliases plot.stft
 #'
 #' @title Computes Short Time Fourier Transforms
 #'
@@ -211,7 +210,8 @@ stft <- function(X,
   obj1
 }
 
-#' @method plot stft
+#' @title plot stft
+#' @name plot.stft
 #'
 #' @description Processes a dataset, creating an object contained processed time-frequency analyses. These can then be plotted.
 #'
@@ -254,8 +254,8 @@ stft <- function(X,
 #' \code{\link{stft}}, \code{\link{image.default}}
 #'
 #' @examples
-#' #Real data
-#' binfile  = system.file("binfile/TESTfile.bin", package = "GENEAread")[1]
+#'  \dontrun{# Real data
+#'  binfile  = system.file("binfile/TESTfile.bin", package = "GENEAread")[1]
 #'
 #' #Read in the entire file, calibrated
 #'  procfile<-read.bin(binfile)
@@ -275,7 +275,7 @@ stft <- function(X,
 #'  plot(obj, mode = "pval", reassign = FALSE, median = TRUE)
 #'  #log scale frequency, no top bar
 #'  dev.new(); plot(obj, mode = "pval", reassign = FALSE, topthresh = Inf, log = "y")
-#'
+#'}
 #' @export
 
 plot.stft <- function (x,

@@ -1,27 +1,25 @@
 Package: GENEAread
 Type: Package
 Title: Package for Reading Binary Files
-Version: 2.0.5
-Date: 2018-07-17
+Version: 2.0.6
+Date: 2018-11-16
 Authors@R: c(
-    person("Zhou", "Fang", role = "aut", email = "ccampbell@mango-solutions.com"),
+    person("Zhou", "Fang", role = "aut"),
     person("Joss", "Langford", role = "aut", email = "joss@activinsights.co.uk"),
     person("Charles", "Sweetland", role = c("aut","cre"), email = "charles@sweetland-solutions.co.uk"))
 Maintainer: Charles Sweetland <charles@sweetland-solutions.co.uk>
-Description: Functions and analytics for GENEA-compatible accelerometer data into R objects. See topic 'GENEAread' for an introduction to the package.
+Description: Functions and analytics for GENEA-compatible accelerometer data
+    into R objects. See topic 'GENEAread' for an introduction to the package.
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true
-Depends: bitops, mmap, GGIR
+Depends: bitops, mmap
 Suggests: MASS, methods
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 NeedsCompilation: yes
-Packaged: 2018-07-17 19:20:02 UTC; ActivInsights
-Collate: 'AccData.r' 'Recalibrate.R' 'convert.time.R' 'epoch.R'
-        'get.intervals.r' 'GRtime.r' 'header.info.R' 'parse.time.R'
-        'read.bin.R' 'stftmod.R' 'svm.R' 'util.R'
+Packaged: 2018-11-16 15:09:26 UTC; CharlesSweetland
 Author: Zhou Fang [aut],
   Joss Langford [aut],
   Charles Sweetland [aut, cre]
 Repository: CRAN
-Date/Publication: 2018-07-17 19:40:02 UTC
+Date/Publication: 2018-11-16 15:40:08 UTC

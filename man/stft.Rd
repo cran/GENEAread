@@ -2,7 +2,6 @@
 % Please edit documentation in R/stftmod.R
 \name{stft}
 \alias{stft}
-\alias{plot.stft}
 \title{Computes Short Time Fourier Transforms}
 \usage{
 stft(X, start=0, end=1, length=NULL,  time.format = c("auto"),

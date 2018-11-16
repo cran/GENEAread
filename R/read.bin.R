@@ -171,7 +171,7 @@
 #' #print(processedfile)
 
 read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Timestamps = FALSE,
-                      verbose = TRUE, do.temp = TRUE,do.volt = TRUE, calibrate = TRUE,
+                      verbose = TRUE, do.temp = TRUE, do.volt = TRUE, calibrate = TRUE,
                       downsample = NULL, blocksize , virtual = FALSE,
                       mmap.load = (.Machine$sizeof.pointer >= 8), pagerefs = TRUE, ...){
 
@@ -185,8 +185,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
     opt.args<-c("gain","offset","luxv","voltv", "warn")
 
     warn <- FALSE
-    gain<-offset<-NULL
-    luxv<-voltv<-NULL
+    gain <- offset <- NULL
+    luxv <- voltv <- NULL
 
     argl<-as.list(match.call())
 
@@ -329,9 +329,11 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
              call. = FALSE)
       }
     }
+
     if (do.temp) {
       temperature <- NULL
     }
+
     if (calibrate) {
       if (!is.null(gain)) {
         if (!is.numeric(gain)) {
@@ -380,7 +382,6 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
 
     data <- NULL
 
-
     invisible(gc()) # garbage collect
     if (mmap.load) {
       #function to get numbers from ascii codes
@@ -389,7 +390,6 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         apply(matrix(dat, size), 2, function(t)
           as.numeric(sub(sep, ".", rawToChar(as.raw(t[t != 58])), fixed = TRUE)))
       }
-
 
       offset =  pos.rec1 - 2  # findInterval(58,cumsum((mmapobj[1:3000] == 13)))+ 1 #TODO
       rec2 = offset + pos.inc
@@ -593,9 +593,9 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         }
 
       } else {
-        #mmap reads
+        # mmap reads
         ####################
-        #read from file
+        # read from file
         tmp = mmapobj[getindex(index)]
         proc.file = convert.intstream(tmp)
         # remember that getindex(id , raw = T) gives the byte offset after the end of
@@ -696,7 +696,7 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
     else {
       save(processedfile, file = outfile)
     }
-    }
+}
 
 #' @title convert.hexstream
 #'
@@ -711,7 +711,7 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
 #' @keywords internal
 
 convert.hexstream <-function(stream){
-  maxint <- 2^(12 - 1)
+  maxint <- 2^(12-1)
 
   #packet <- as.integer(paste("0x",stream,sep = "")) #strtoi is faster
   packet <-bitShiftL(strtoi(stream, 16),4*(2:0))
@@ -720,7 +720,16 @@ convert.hexstream <-function(stream){
 
   packet<-matrix(packet, nrow=4)
 
-  light <- bitShiftR(packet[4,],2)
+  # Light packet needs a higher integer than the rest
+  # Make a new one for light - This now works
+  packet1 <- bitShiftL(strtoi(stream, 16),4*(2:0))
+  packet1 <-rowSums(matrix(packet1,ncol=3,byrow=TRUE))
+  maxint1 = 2^12
+  packet1[packet1>=maxint1] <- -(maxint1 - (packet1[packet1>=maxint1] - maxint1))
+  packet1<-matrix(packet1, nrow=4)
+
+  light <- bitShiftR(packet1[4,],2)
+
   button <-bitShiftR(bitAnd(packet[4,],2),1)
 
   packet<-rbind(packet[1:3,],light,button)
@@ -739,12 +748,21 @@ convert.hexstream <-function(stream){
 #' @keywords internal
 
 convert.intstream <- function(stream){
+
   maxint <- 2^(12 - 1)
-  stream = stream - 48 - 7 * (stream > 64)
-  packet<- drop(matrix(stream, ncol = 3, byrow = T) %*% 16^(3: 1 - 1))
+  stream1 = stream - 48 - 7 * (stream > 64)
+  packet<- drop(matrix(stream1, ncol = 3, byrow = T) %*% 16^(3: 1 - 1))
   packet[packet>=maxint] <- -2*maxint + (packet[packet>=maxint] )
   packet<-matrix(packet,nrow=4)
-  light = floor(packet[4,] / 4 -> ltmp)
+
+  # Again light packet needs a higher maxint value than the rest of the data.
+  maxint1 <- 2^(12)
+  stream2 = stream - 48 - 7 * (stream > 64)
+  packet1<- drop(matrix(stream2, ncol = 3, byrow = T) %*% 16^(3: 1 - 1))
+  packet1[packet1>=maxint1] <- -2*maxint1 + (packet1[packet1>=maxint1] )
+  packet1<-matrix(packet1,nrow=4)
+
+  light = abs(floor(packet1[4,] / 4 -> ltmp)) # Adding in the absolute value here to ensure no negatives
   rbind(packet[1:3,], light, (ltmp-light) >0.49)
 }
 
@@ -762,3 +780,8 @@ is.POSIXct <- function(x) inherits(x, "POSIXct")
 is.POSIXlt <- function(x) inherits(x, "POSIXlt")
 is.POSIXt <- function(x) inherits(x, "POSIXt")
 is.Date <- function(x) inherits(x, "Date")
+
+
+
+
+
