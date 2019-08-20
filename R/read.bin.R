@@ -208,7 +208,7 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
     position.volts <- 7
     orig.opt <- options(digits.secs = 3)
     #initialise some variables
-    pos.rec1 <- firstpage <- npages <- t1c <- t1midnight <- pos.inc<-headlines<- NA
+    pos.rec1 <- npages <- t1c <- t1midnight <- pos.inc<-headlines<- NA
 
     #get header and calibration info using header.info.
     header = header.info(binfile, more = T)
@@ -221,8 +221,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
 
     if ((!exists("pos.rec1")) || (is.na(pos.rec1))) mmap.load = FALSE
 
-    #temporary workaround.... calculate pagerefs
-    if ((firstpage != 0) && (mmap.load == T) && (length(pagerefs) < 2) ) pagerefs = TRUE
+    #temporary workaround.... calculate pagerefs - removed (firstpage != 0)
+    if ((mmap.load == T) && (length(pagerefs) < 2) ) pagerefs = TRUE
 
     if (missing(blocksize)){
       blocksize = Inf

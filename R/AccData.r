@@ -1,6 +1,6 @@
 
 #' @name AccData
-#' @title Accelerometer Data Onject
+#' @title Accelerometer Data Object
 #' @description Accelerometer Data Output from read.bin function
 #' @docType data
 #' @format An AccData object

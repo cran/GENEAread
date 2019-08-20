@@ -1,7 +1,7 @@
 
-#' @name Convert.time
+#' @name convert.time
 #'
-#' @title Convert.time
+#' @title convert.time
 #'
 #' @description extends time display from package chron to use h:m:s for > 1 day times.
 #'

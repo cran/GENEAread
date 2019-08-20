@@ -40,8 +40,8 @@ header.info <- function(binfile,
   #    index <- c(2, 20:22, 26:29)
   tmpd = readLines(binfile, 300)
 
-  #try to find index positions - so will accomodate multiple lines in the notes sections
-  #change when new version of binfile is produced.
+  # try to find index positions - so will accomodate multiple lines in the notes sections
+  # change when new version of binfile is produced.
   ind.subinfo = min(which((tmpd == "Subject Info" )& (1:length(tmpd) >= 37)))
   ind.memstatus = max(which(tmpd == "Memory Status"))
   ind.recdata = (which(tmpd == "Recorded Data"))
@@ -57,7 +57,7 @@ header.info <- function(binfile,
     stop("Corrupt headers or not Geneactiv file!", call = FALSE)
   }
 
-  #read in header info
+  # read in header info
   nm <- NULL
 
   for (i in 1:length(index)) {
@@ -85,7 +85,7 @@ header.info <- function(binfile,
   if (more){
     # grab calibration data etc as well
     calibration = list()
-    fc = file(binfile, "rt") # Removing the "rt" as this is varies the output. See https://stackoverflow.com/questions/52850323/scan-function-output-varies
+    fc = file(binfile, "rt") # Removing the "rt" as this varies the output. See https://stackoverflow.com/questions/52850323/scan-function-output-varies
 
     index = sort(c(ind.config + 4,
                    ind.calibdata + 1:8,
@@ -103,9 +103,11 @@ header.info <- function(binfile,
                           quiet = TRUE)[3],
                           c(1,2,5),
                           c(1, 3, 6))
+
     calibration$tzone = ifelse(tmp[1] == "-", -1, 1) * (as.numeric(tmp[3]) + 60* as.numeric(tmp[2])) / 60
 
     index = diff(index) - 1
+
     for (sk in index[1:10]){
       calibration = c(calibration,
                       as.integer(scan(fc,
@@ -119,13 +121,26 @@ header.info <- function(binfile,
 
     names(calibration) = c("tzone", "xgain", "xoffset", "ygain", "yoffset", "zgain", "zoffset", "volts", "lux", "npages", "firstpage")
 
-    t1 <- substring(scan(fc, skip = index[11], what = "", quiet = TRUE, nlines = 1, sep = "\n"), 11)
-    freq = (scan(fc, skip = index[12], what = "", n = 2, sep = ":", quiet = TRUE)[2])
+    t1 <- substring(scan(fc,
+                         skip = index[11],
+                         what = "",
+                         quiet = TRUE,
+                         nlines = 1,
+                         sep = "\n"), 11)
+
+    freq = (scan(fc,
+                 skip = index[12],
+                 what = "",
+                 n = 2,
+                 sep = ":",
+                 quiet = TRUE)[2])
+
     if (Decimal_Separator == ","){
       freq = sub(",", ".", freq, fixed = TRUE)
     }
+
     freq <- as.numeric(freq)
-    #stop reading freq from file, calculate from page times instead (if possible)
+    # stop reading freq from file, calculate from page times instead (if possible)
     t1c <- parse.time(t1, format = "POSIX", tzone = calibration$tzone)
     t1midnight = floor(parse.time(t1, format = "day")) * 60*60*24
     t1 <- parse.time(t1, format = "seconds")

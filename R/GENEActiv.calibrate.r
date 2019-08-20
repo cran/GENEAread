@@ -53,11 +53,6 @@
 #'
 #' @export
 
-
-
-
-
-
 GENEActiv.calibrate = function(binfile,
                                use.temp = TRUE,
                                spherecrit = 0.3,
@@ -73,21 +68,24 @@ GENEActiv.calibrate = function(binfile,
   filename = filename[length(filename)]
 
   # set parameters
-  filequality = data.frame(filetooshort=FALSE,filecorrupt=FALSE,filedoesnotholdday = FALSE)
+  filequality = data.frame(filetooshort = FALSE,
+                           filecorrupt  = FALSE,
+                           filedoesnotholdday = FALSE)
+
   ws4 = 10 # Epoch for recalibration, don't change
   ws2 = windowsizes[2] # Dummy variable
   ws =  windowsizes[3] # window size for assessing non-wear time (seconds)
   i = 1 # Counter to keep track of which binary block is being read
   count = 1 # Counter to keep track of the number of seconds that have been read
   LD = 2 # Dummy variable used to identify end of file and to make the process stop
-  cal.error.start=cal.error.end=c()
-  spheredata=c()
-  tempoffset=c()
-  npoints=c()
+  cal.error.start = cal.error.end=c()
+  spheredata = c()
+  tempoffset = c()
+  npoints = c()
   scale = c(1,1,1)
   offset = c(0,0,0)
   bsc_cnt = 0
-  bsc_qc = data.frame(time=c(),size=c())
+  bsc_qc = data.frame(time = c(),size = c())
   # Find the frequency of the file.
   options(warn=-1) #turn off warnings
   H = header.info(binfile)

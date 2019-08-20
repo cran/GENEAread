@@ -1,7 +1,7 @@
 
-#' @name Recalibrate
+#' @name recalibrate
 #'
-#' @title Recalibrate
+#' @title recalibrate
 #'
 #' @description Taking a GENEActiv binfile and using the recalibration script to create a new calibrated binfile
 #'
@@ -30,7 +30,7 @@
 #'
 #' @return Saves a calibrated binfile to an output folder
 #'
-#' @details Takes each binfile found in the data directory, calibrates according to the routine by Vincent Van Tee Hees
+#' @details Takes each binfile found in the data directory, calibrates according to the routine by Vincent T. van Hees
 #' and saves the calibrated file to the specificied output directory
 #'
 #' @export
@@ -41,16 +41,22 @@
 #' ReCalibrate(DataDirectory)
 #' }
 
+recalibrate = function(datadir,
+                       outputdir,
+                       use.temp = TRUE,
+                       spherecrit = 0.3,
+                       minloadcrit = 72,
+                       printsummary = TRUE,
+                       chunksize = c(0.5),
+                       windowsizes = c(60,900,3600)){
 
-ReCalibrate = function(datadir ,outputdir, use.temp = TRUE, spherecrit = 0.3, minloadcrit = 72,
-                       printsummary = TRUE, chunksize=c(0.5), windowsizes=c(60,900,3600)){
-    # Create new folder if there isnt an outputdirectory
+    # Check that the datadir exists
     if (length(datadir) == 0) {
       if (length(datadir) == 0) {
-        print("Variable datadir is not defined")
+        stop("Variable datadir is not defined")
       }
       if (missing(outputdir)) {
-        print("Variable outputdir is not specified")
+        print("Variable outputdir is not specified, creating an output directory.")
       }
     }
 
@@ -60,7 +66,7 @@ ReCalibrate = function(datadir ,outputdir, use.temp = TRUE, spherecrit = 0.3, mi
     fnames=list.files(path = datadir)
     if (length(fnames) == 0){stop("There are no files in the data directory")}
 
-    ####list of all bin files
+    #### list of all bin files ####
     if (filelist == FALSE) {
       fnames = c(dir(datadir, recursive = TRUE, pattern="[.]bin"))
     }
@@ -80,10 +86,15 @@ ReCalibrate = function(datadir ,outputdir, use.temp = TRUE, spherecrit = 0.3, mi
       Binfile = file.path(paste0(datadir, fnames[i]))
 
       # Find the calibration values of the data.
-      C = GENEActiv.calibrate(Binfile, use.temp = TRUE, spherecrit = 0.3, minloadcrit = 72,
-                              printsummary = TRUE, chunksize=c(0.5), windowsizes=c(60,900,3600))
+      C = GENEActiv.calibrate(Binfile,
+                              use.temp = use.temp,
+                              spherecrit = spherecrit,
+                              minloadcrit = minloadcrit,
+                              printsummary = printsummary,
+                              chunksize = chunksize,
+                              windowsizes = windowsizes)
 
-      # Read in the current values -
+      # Read in the current values from the file.
       Lines=readLines(Binfile,-1) # Reads the bin file to the point where the calibration data is.
       XOffset=Lines[49];  XGain=Lines[48]
       YOffset=Lines[51];  YGain=Lines[50]
@@ -127,13 +138,11 @@ ReCalibrate = function(datadir ,outputdir, use.temp = TRUE, spherecrit = 0.3, mi
         ZGainNew=round(ZGainN / C$scale[3])
         Lines[52]=paste("z gain:",sep="", ZGainNew)
       }
-      # Set the correct path to the outputfolder
-      setwd(outputdir)
 
       # Creating the correct file name
       filename = fnames[i]
       names = strsplit(filename,".bin")
-      writeLines(Lines, paste0(names,"_Recalibrate.bin"))
+      writeLines(Lines, file.path(outputdir, paste0(names,"_Recalibrate.bin")))
     }
 }
 
