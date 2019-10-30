@@ -1,6 +1,6 @@
 
 #' @name GENEAread-package
-#' @aliases GENEAread-packages
+#' @aliases GENEAread-package
 #' @aliases GENEAread
 #' @docType package
 #'
@@ -150,14 +150,14 @@
 #' requireNamespace("GENEAread")
 #' binfile = system.file("binfile/TESTfile.bin", package = "GENEAread")[1]
 #' #Read in the entire file, calibrated
-#' procfile<-read.bin(binfile)
+#' procfile <- read.bin(binfile)
 #' # print(procfile)
 #' # procfile$data.out[1:5,]
 #' # Uncalibrated, mmap off
-#' procfile2<-read.bin(binfile, calibrate = FALSE)
+#' procfile2 <- read.bin(binfile, calibrate = FALSE)
 #' # procfile2$data.out[1:5,]
 #' #Read in again, reusing already computed mmap pagerefs
-#' # procfile3<-read.bin(binfile, pagerefs = procfile2$pagerefs )
+#' # procfile3 <- read.bin(binfile, pagerefs = procfile2$pagerefs )
 #' #Downsample by a factor of 10
 #' procfilelo<-read.bin(binfile, downsample = 10)
 #' # print(procfilelo)
@@ -166,54 +166,74 @@
 #' procfileshort <- read.bin(binfile, start = "16:50", end = "16:51")
 #' # print(procfileshort)
 #' ##NOT RUN: Read, and save as a R workspace
-#' #read.bin(binfile, outfile="tmp.Rdata")
+#' #read.bin(binfile, outfile = "tmp.Rdata")
 #' #print(load("tmp.Rdata"))
 #' #print(processedfile)
 
-read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Timestamps = FALSE,
-                      verbose = TRUE, do.temp = TRUE, do.volt = TRUE, calibrate = TRUE,
-                      downsample = NULL, blocksize , virtual = FALSE,
-                      mmap.load = (.Machine$sizeof.pointer >= 8), pagerefs = TRUE, ...){
+read.bin <- function(binfile,
+                     outfile = NULL,
+                     start = NULL,
+                     end = NULL,
+                     Use.Timestamps = FALSE,
+                     verbose = TRUE,
+                     do.temp = TRUE,
+                     do.volt = TRUE,
+                     calibrate = TRUE,
+                     downsample = NULL,
+                     blocksize,
+                     virtual = FALSE,
+                     mmap.load = (.Machine$sizeof.pointer >= 8),
+                     pagerefs = TRUE, ...){
+
+    #### 1. Setting envirnoment and variables ####
 
     invisible(gc()) # garbage collect
 
-    requireNamespace("mmap")
+    requireNamespace("mmap") # Ensure that mmap is loaded.
 
-    # optional argument initialization as NULL. Arguments assigned
+    #### 2. Optional argument initialization as NULL. Arguments assigned ####
     # if they appear in the function call.
 
-    opt.args<-c("gain","offset","luxv","voltv", "warn")
+    opt.args <- c("gain","offset","luxv","voltv", "warn")
 
-    warn <- FALSE
+    warn <- FALSE # This gives a warning to the user about the number of pages about to be read in.
     gain <- offset <- NULL
     luxv <- voltv <- NULL
 
-    argl<-as.list(match.call())
+    # This lists all unassisnged parameters given to the function. The ... e.g opt.args.
+    argl <- as.list(match.call())
 
-    argind<-pmatch(names(argl),opt.args)
-    argind<-which(!is.na(argind))
+    # This finding the index of the arguments that are relevant
+    argind <- pmatch(names(argl),opt.args)
+    argind <- which(!is.na(argind))
 
-    if(length(argind)>0){
-      called.args<-match.arg(names(argl),opt.args,several.ok=TRUE)
+    # Assigning the names of the variables
+    if (length(argind) > 0){
+      called.args <- match.arg(names(argl),
+                               opt.args,
+                               several.ok = TRUE)
       for(i in 1:length(called.args)){
-        assign(called.args[i],eval(argl[[argind[i]]]))
+        assign(called.args[i],
+               eval(argl[[argind[i]]]))
       }
     }
 
-    #variables for positions and record lengths in file
+    #### 3. Variables for positions and record lengths in file ####
     nobs <- 300
     reclength <- 10
     position.data <- 10
     position.temperature <- 6
     position.volts <- 7
     orig.opt <- options(digits.secs = 3)
-    #initialise some variables
-    pos.rec1 <- npages <- t1c <- t1midnight <- pos.inc<-headlines<- NA
+    # Initialise some variables
+    pos.rec1 <- npages <- t1c <- t1midnight <- pos.inc <- headlines <- NA
 
-    #get header and calibration info using header.info.
+    #### 4 Get header and calibration info using header.info. ####
+
     header = header.info(binfile, more = T)
-    commasep = unlist(header)[17] == ","   #decimal seperator is comma?
+    commasep = unlist(header)[17] == ","   # decimal seperator is comma?
 
+    # Pulls the attributes out of the binfile.
     H = attr(header, "calibration")
 
     # Assigning out the variables from the header.info function
@@ -221,14 +241,20 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
 
     if ((!exists("pos.rec1")) || (is.na(pos.rec1))) mmap.load = FALSE
 
-    #temporary workaround.... calculate pagerefs - removed (firstpage != 0)
-    if ((mmap.load == T) && (length(pagerefs) < 2) ) pagerefs = TRUE
-
+    # temporary workaround.... calculate pagerefs - So this is taking away
+    if ((mmap.load == T) &&
+        (length(pagerefs)) < 2) {
+      pagerefs = TRUE
+      }
     if (missing(blocksize)){
       blocksize = Inf
       if (npages > 10000) blocksize = 10000
     }
+
     freqint = round(freq)
+
+    #### 5. Downsampling Message ####
+
     if (!is.null(downsample)) {
       if (verbose) {
         cat("Downsampling to ", round(freq/downsample[1],2) , " Hz \n")
@@ -238,9 +264,13 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
           cat("Warning, downsample divisor not integer!\n")
       }
     }
+
     if (verbose) {
       cat("Number of pages in binary file:", npages, "\n")
     }
+
+    #### 6. Setting up the time sequence ####
+
     freqseq <- seq(0, by = 1/freq, length = nobs)
     timespan <- nobs/freq
     #    t1 <- t1[2:length(t1)]
@@ -250,6 +280,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
     tnc <- timestampsc[npages]
     tn <- timestamps[npages]
 
+    #### 7. Default start and end times ####
+
     if (is.null(start)) {
       start <- 1
     }
@@ -257,23 +289,38 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
       end <- npages
     }
 
+    #### 8. Time entries ####
+
     if (Use.Timestamps == TRUE){
-      # Entering a timestamp rather than a time needs to be explicit. and timestamps has to be entered as true.
+      # Ensuring that timstamps are not in the range between 0 and 1
+      if (start >= 0 &
+          start <= 1 &
+          !missing(start)){
+        stop("Please eneter the start parameter as a timestamp if using Use.Timestamps = TRUE")
+      }
+
+      if (end >= 0 &
+          end <= 1 &
+          !missing(end)){
+        stop("Please eneter the end parameter as a timestap if using Use.Timestamps = TRUE")
+      }
+
+      # Entering a timestamp rather than a time needs to be explicit.
       if (is.numeric(start)){
-        start = findInterval(start - 0.5, timestamps, all.inside = T) #which(timestamps >= start-(0.5))[1]
+        start = findInterval(start - 0.5, timestamps, all.inside = T)
         t1 = timestamps[start+1]
       } else{
         stop(cat("Please enter the start as a numeric timestamp"))
       }
 
       if (is.numeric(end)){
-        end = findInterval(end, timestamps, all.inside = T) +1 #max(which(timestamps<= (end+0.5) ))
+        end = findInterval(end, timestamps, all.inside = T) +1
       } else{
         stop(cat("Please enter the start as a numeric timestamp"))
       }
 
     } else{
-      #goal is to end up with start, end as page refs
+      # goal is to end up with start, end as page refs!
       if (is.numeric(start)) {
         if ((start[1] > npages)) {
           stop(cat("Please input valid start and end times between ",
@@ -295,10 +342,15 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         }
       }
 
-      #parse times, including partial times, and times with day offsets
+      # parse times, including partial times, and times with day offsets
       if (is.character(start)) {
-        start <- parse.time(start, format = "seconds", start = t1, startmidnight = t1midnight)
-        start = findInterval(start - 0.5, timestamps, all.inside = T) #which(timestamps >= start-(0.5))[1]
+        start <- parse.time(start,
+                            format = "seconds",
+                            start = t1,
+                            startmidnight = t1midnight)
+        start = findInterval(start - 0.5,
+                             timestamps,
+                             all.inside = T) #which(timestamps >= start-(0.5))[1]
         t1 = timestamps[start+1]
       }
 
@@ -308,15 +360,14 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
       }
     }
 
-
+    #### 9 Indexing binary file by page ref start and end times (Seq number in bin file) ####
 
     index <-  NULL
+
     for (i in 1:length(start)){
       index = c(index, start[i]:end[i])
     }
 
-    #    d1 <- max(which((timestamps - start) <= 0))
-    #   index <- unique(c(d1, index))
     if (length(index) == 0) {
       if (npages > 15) {
         stop("No pages to process with specified timestamps.  Please try again.\n",
@@ -333,6 +384,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
     if (do.temp) {
       temperature <- NULL
     }
+
+    #### 10. Calibrating data ####
 
     if (calibrate) {
       if (!is.null(gain)) {
@@ -372,6 +425,9 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         }
       }
     }
+
+    #### 11. nstreams - Number of blocks of data to be processed ####
+
     nstreams <- length(index)
     if(warn){
       if (nstreams > 100) {
@@ -382,7 +438,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
 
     data <- NULL
 
-    invisible(gc()) # garbage collect
+    #### 12. mmap load routine ####
+
     if (mmap.load) {
       #function to get numbers from ascii codes
       numstrip <- function(dat, size = 4, sep = "." ){
@@ -476,6 +533,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
       replicate ( min( index - 1 ), is.character(readLines(fc2, n=reclength)))
     }
 
+    #### 13. Calculate the blocksizes ####
+
     numblocks = 1
     blocksize = min(blocksize, nstreams)
     if (nstreams > blocksize ){
@@ -483,15 +542,20 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
       numblocks = ceiling(nstreams/blocksize)
     }
 
+    #### 14. Initate Outputs ####
     Fulldat = NULL
     Fullindex = index#matrix(index, ncol = numblocks)
     index.orig = index
 
+    ##### 15. Show processing time ####
     if (verbose)	    {
       cat("Processing...\n")
       pb <- txtProgressBar(min = 0, max = 100,style=1)
     }
+
     start.proc.time <- Sys.time()
+
+    #### 16. Downsample offset ####
     if(!is.null(downsample)){
       downsampleoffset = 1
       if (length(downsample) == 2){
@@ -499,6 +563,8 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         downsample = downsample[1]
       }
     }
+
+    #### 17. Virtual loading Option ####
 
     if (virtual){
       if (is.null(downsample)) downsample = 1
@@ -532,13 +598,18 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
       return(invisible( output  ))
     }
 
+    #### 18. For loop to read data ####
+    # Reading data in block by block.
+
     voltages = NULL
     lastread = min(index) -1
     for (blocknumber in 1: numblocks){
       index = Fullindex[1:min(blocksize, length(Fullindex))]
       Fullindex = Fullindex[-(1:blocksize)]
       proc.file <- NULL
+
       if (!mmap.load){
+      #### 19. Using mmap = F ####
         tmpd <- readLines(fc2, n = (max(index) -lastread) * reclength  )
         bseq = (index - lastread -1 ) * reclength
         lastread = max(index)
@@ -593,10 +664,12 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         }
 
       } else {
-        # mmap reads
-        ####################
-        # read from file
-        tmp = mmapobj[getindex(index)]
+
+        #### 20. mmap reads ####
+        # read from file - remove NAs here. Exception from not analysed files
+        infeed = getindex(index)
+        infeed = infeed[!is.na(infeed)]
+        tmp = mmapobj[infeed]
         proc.file = convert.intstream(tmp)
         # remember that getindex(id , raw = T) gives the byte offset after the end of
         # each data record. Seems like battery voltages and temperatures can vary in
@@ -613,11 +686,15 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         vind = (c+16):(d-2) - length(firstrec)
 
         if (do.temp){
-          temperature = rep(numstrip(mmapobj[rep(pageindices, each = length(tind)) + tind ],
+          tempfeed = rep(pageindices, each = length(tind)) + tind
+          tempfeed = tempfeed[!is.na(tempfeed)]
+          temperature = rep(numstrip(mmapobj[tempfeed],
                                      size = length(tind), sep = ifelse(commasep, ",", ".") ),
                             each = nobs) #lets hope this doesn't slow things too much
         }
+
         nn <- rep(timestamps[index], each = length(freqseq)) + freqseq
+
         if (!is.null(downsample)){
           positions = downsampleoffset +
             (0: floor(( nobs * length(index)  - downsampleoffset )/downsample)) * downsample
@@ -627,14 +704,15 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
             temperature = temperature[positions]
           }
           #	freq = freq * ncol(proc.file)/ (nobs * (length(index)))
-          downsampleoffset = downsample - (nobs*blocksize - downsampleoffset  )%% downsample
+          downsampleoffset = downsample - (nobs*blocksize - downsampleoffset) %% downsample
         }
+
         if (do.volt){
-          voltages = c(voltages, numstrip(mmapobj[rep(pageindices, each = length(vind)) + vind ],
+          voltfeed = rep(pageindices, each = length(vind)) + vind
+          voltfeed = voltfeed[!is.na(voltfeed)]
+          voltages = c(voltages, numstrip(mmapobj[voltfeed],
                                           size = length(vind) , sep = ifelse(commasep, ",", ".")) )
         }
-
-
 
       }
 
@@ -647,9 +725,14 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         proc.file[4, ] <- proc.file[4, ] * lux/volts
       }
 
+      ## Ensuring that nn and proc.file are the same length.
+      if ( length(proc.file[1,]) < length(nn)){
+        nn = nn[1:(length((proc.file[1,])))] # Remove additional timestamps
+      }
+
       proc.file <- t(proc.file)
       proc.file <- cbind(nn, proc.file)
-      #    rownames(proc.file) <- paste("obs.", 1:nrow(proc.file))
+      # rownames(proc.file) <- paste("obs.", 1:nrow(proc.file))
       # strip out row labels - waste of memory
       cnames <- c("timestamp", "x", "y", "z", "light", "button")
       if (do.temp) {
@@ -660,13 +743,12 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
         colnames(proc.file) <- cnames
       }
 
-
       Fulldat= rbind(Fulldat, proc.file)
       if (verbose)	setTxtProgressBar(pb, 100 *  blocknumber / numblocks)
 
     }
 
-    #### Changes up to here ####
+    #### 21. Calculating proccessing time and outputting to console ####
     if (verbose) close(pb)
 
     freq = freq * nrow(Fulldat) / (nobs *  nstreams)
@@ -684,10 +766,17 @@ read.bin <- function (binfile, outfile = NULL, start = NULL, end = NULL, Use.Tim
     } else {
       munmap(mmapobj)
     }
+
+    #### 22. Finalise Output ####
     processedfile <- list(data.out = Fulldat,
-                          page.timestamps = timestampsc[index.orig], freq= freq,
-                          filename =tail(strsplit(binfile, "/")[[1]],1), page.numbers = index.orig,
-                          call = argl, page.volts = voltages, pagerefs = pagerefs, header = header)
+                          page.timestamps = timestampsc[index.orig],
+                          freq = freq,
+                          filename = tail(strsplit(binfile, "/")[[1]],1),
+                          page.numbers = index.orig,
+                          call = argl,
+                          page.volts = voltages,
+                          pagerefs = pagerefs,
+                          header = header)
 
     class(processedfile) = "AccData"
     if (is.null(outfile)) {

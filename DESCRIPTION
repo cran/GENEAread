@@ -1,15 +1,16 @@
 Package: GENEAread
 Type: Package
 Title: Package for Reading Binary Files
-Version: 2.0.7
-Date: 2019-08-15
+Version: 2.0.8
+Date: 2019-10-30
 Authors@R: c(
     person("Zhou", "Fang", role = "aut"),
     person("Joss", "Langford", role = "aut", email = "joss@activinsights.co.uk"),
     person("Charles", "Sweetland", role = c("aut","cre"), email = "charles@sweetland-solutions.co.uk"))
 Maintainer: Charles Sweetland <charles@sweetland-solutions.co.uk>
-Description: Functions and analytics for GENEA-compatible accelerometer data
-    into R objects. See topic 'GENEAread' for an introduction to the package.
+Description: Functions and analytics for GENEA-compatible accelerometer data into R objects. 
+             See topic 'GENEAread' for an introduction to the package. 
+             See <https://www.activinsights.com/products/geneactiv/> for more details on the GENEActiv device.
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -17,9 +18,9 @@ Depends: bitops, mmap
 Suggests: MASS, methods
 RoxygenNote: 6.1.1
 NeedsCompilation: yes
-Packaged: 2019-08-20 17:11:02 UTC; ActivInsights
+Packaged: 2019-10-30 16:39:34 UTC; Charlie
 Author: Zhou Fang [aut],
   Joss Langford [aut],
   Charles Sweetland [aut, cre]
 Repository: CRAN
-Date/Publication: 2019-08-20 17:40:06 UTC
+Date/Publication: 2019-10-30 23:00:07 UTC

@@ -4,7 +4,6 @@
 \name{GENEAread-package}
 \alias{GENEAread-package}
 \alias{read.bin}
-\alias{GENEAread-packages}
 \title{A package to process binary accelerometer output files.}
 \usage{
 read.bin(binfile, outfile = NULL, start = NULL, end = NULL,
@@ -166,14 +165,14 @@ If order or field names are changed in future .bin files, this function may have
 requireNamespace("GENEAread")
 binfile = system.file("binfile/TESTfile.bin", package = "GENEAread")[1]
 #Read in the entire file, calibrated
-procfile<-read.bin(binfile)
+procfile <- read.bin(binfile)
 # print(procfile)
 # procfile$data.out[1:5,]
 # Uncalibrated, mmap off
-procfile2<-read.bin(binfile, calibrate = FALSE)
+procfile2 <- read.bin(binfile, calibrate = FALSE)
 # procfile2$data.out[1:5,]
 #Read in again, reusing already computed mmap pagerefs
-# procfile3<-read.bin(binfile, pagerefs = procfile2$pagerefs )
+# procfile3 <- read.bin(binfile, pagerefs = procfile2$pagerefs )
 #Downsample by a factor of 10
 procfilelo<-read.bin(binfile, downsample = 10)
 # print(procfilelo)
@@ -182,7 +181,7 @@ object.size(procfilelo) / object.size(procfile)
 procfileshort <- read.bin(binfile, start = "16:50", end = "16:51")
 # print(procfileshort)
 ##NOT RUN: Read, and save as a R workspace
-#read.bin(binfile, outfile="tmp.Rdata")
+#read.bin(binfile, outfile = "tmp.Rdata")
 #print(load("tmp.Rdata"))
 #print(processedfile)
 }
