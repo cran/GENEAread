@@ -4,8 +4,7 @@
 \alias{seq.log}
 \title{seq.log}
 \usage{
-\method{seq}{log}(from = 1, to = 1, length.out = 50,
-  add.zero = FALSE, shifting = 0)
+\method{seq}{log}(from = 1, to = 1, length.out = 50, add.zero = FALSE, shifting = 0)
 }
 \arguments{
 \item{from}{Value to Create the sequence from. default to 1.}

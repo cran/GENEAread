@@ -2,6 +2,8 @@
 % Please edit documentation in R/get.intervals.r
 \name{get.intervals}
 \alias{get.intervals}
+\alias{print.VirtAccData}
+\alias{VirtAccData}
 \title{Extract an interval of data.}
 \usage{
 get.intervals(x, start=0, end = 1, length = NULL,

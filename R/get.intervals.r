@@ -168,13 +168,12 @@ get.intervals = function(x,
     if (simplify) {
       x = x$data.out[,(2- incl.date):4]
     }
-  }
-  else {
+  } else {
     if (ncol(x) == 3){
-      x =cbind (1:nrow(x)/sampling.freq, x)
+      x = cbind (1:nrow(x)/sampling.freq, x)
     }
     if ((time.format == "time") ){
-      times =x[,1]
+      times = x[,1]
     }
     if (!incl.date){
       x = x[,-1]
@@ -183,8 +182,7 @@ get.intervals = function(x,
 
   if (simplify){
     n = nrow(x)
-  }
-  else {
+  } else {
     n = nrow(x$data.out)
   }
 

@@ -551,7 +551,7 @@ stftcalc <- function(X,
   numwin <- trunc ((length(X) - win) / inc)
 
   ## compute the windows coefficients
-  wincoef <- eval(parse(text=wtype))(win)
+  wincoef <- eval(parse(text = wtype))(win)
 
   ## create a matrix Z whose columns contain the windowed time-slices
   pval = rep(0, numwin+1)

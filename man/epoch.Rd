@@ -3,6 +3,12 @@
 \name{epoch}
 \alias{epoch}
 \alias{apply.epoch}
+\alias{mean.epoch}
+\alias{sd.epoch}
+\alias{median.epoch}
+\alias{mad.epoch}
+\alias{autocor.epoch}
+\alias{quantile.epoch}
 \title{Compute epochal summary statistics.}
 \usage{
 apply.epoch(x, epoch.size = 10, incl.date = FALSE, FUN)

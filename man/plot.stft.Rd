@@ -4,11 +4,24 @@
 \alias{plot.stft}
 \title{plot stft}
 \usage{
-\method{plot}{stft}(x, mode = c("decibels", "modulus", "pval"),
-  log = "", showmax = TRUE, median = FALSE, xaxis = TRUE,
-  topthresh, reassign = (!(is.null(x$LGD)) && !("mv" \%in\% x$type)),
-  ylim, xlim, new = TRUE, zlim.raw, zlim.quantile, cex,
-  col = gray(63:0/63), ...)
+\method{plot}{stft}(
+  x,
+  mode = c("decibels", "modulus", "pval"),
+  log = "",
+  showmax = TRUE,
+  median = FALSE,
+  xaxis = TRUE,
+  topthresh,
+  reassign = (!(is.null(x$LGD)) && !("mv" \%in\% x$type)),
+  ylim,
+  xlim,
+  new = TRUE,
+  zlim.raw,
+  zlim.quantile,
+  cex,
+  col = gray(63:0/63),
+  ...
+)
 }
 \arguments{
 \item{x}{"stft" class object to be processed.}

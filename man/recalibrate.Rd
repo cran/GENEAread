@@ -4,9 +4,16 @@
 \alias{recalibrate}
 \title{recalibrate}
 \usage{
-recalibrate(datadir, outputdir, use.temp = TRUE, spherecrit = 0.3,
-  minloadcrit = 72, printsummary = TRUE, chunksize = c(0.5),
-  windowsizes = c(60, 900, 3600))
+recalibrate(
+  datadir,
+  outputdir,
+  use.temp = TRUE,
+  spherecrit = 0.3,
+  minloadcrit = 72,
+  printsummary = TRUE,
+  chunksize = c(0.5),
+  windowsizes = c(60, 900, 3600)
+)
 }
 \arguments{
 \item{datadir}{The location of the directory/file containing GENEActiv binfile.}

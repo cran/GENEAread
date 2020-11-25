@@ -4,7 +4,9 @@
 \name{AccData}
 \alias{AccData}
 \title{Accelerometer Data Object}
-\format{An AccData object}
+\format{
+An AccData object
+}
 \source{
 Output of \code{\link{read.bin}}
 }

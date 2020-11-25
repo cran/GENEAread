@@ -60,11 +60,11 @@
 #' convert.time(1:10)
 #' convert.time(1:10*1000)
 #' #we add a different default format
-#' convert.time(1:10*1000, "\%H:\%M:\%OS3") -> t
+#' convert.time(1:10*1000, "%H:%M:%OS3") -> t
 #' t
 #' str(t)
 #' # we override format with our own
-#' format(t, format = "\%a \%d/\%m/\%y \%H:\%M:\%OS3")
+#' format(t, format = "%a %d/%m/%y %H:%M:%OS3")
 #'
 #' # plot calls axis.GRtime automatically. Notice
 #' # that the format attribute is used.

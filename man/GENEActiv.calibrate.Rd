@@ -4,9 +4,15 @@
 \alias{GENEActiv.calibrate}
 \title{GENEActiv.calibrate}
 \usage{
-GENEActiv.calibrate(binfile, use.temp = TRUE, spherecrit = 0.3,
-  minloadcrit = 72, printsummary = TRUE, chunksize = c(),
-  windowsizes = c(5, 900, 3600))
+GENEActiv.calibrate(
+  binfile,
+  use.temp = TRUE,
+  spherecrit = 0.3,
+  minloadcrit = 72,
+  printsummary = TRUE,
+  chunksize = c(),
+  windowsizes = c(5, 900, 3600)
+)
 }
 \arguments{
 \item{binfile}{A filename of a file to process.}

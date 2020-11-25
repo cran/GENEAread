@@ -60,24 +60,15 @@ recalibrate = function(datadir,
       }
     }
 
-    filelist = FALSE
+    # List all the bin files in the data directory.
+    BinPattern <- "*\\.[bB][iI][nN]$"
+    fnames <- list.files(path = datadir, pattern = BinPattern, full.names = FALSE)
 
-    # List all the files
-    fnames=list.files(path = datadir)
-    if (length(fnames) == 0){stop("There are no files in the data directory")}
-
-    #### list of all bin files ####
-    if (filelist == FALSE) {
-      fnames = c(dir(datadir, recursive = TRUE, pattern="[.]bin"))
-    }
-
-    else {
-      fnames = datadir
-    }
+    if (length(fnames) == 0){stop("There are no .bin files in the data directory")}
 
     # If the outputdirectory is not specified create a defaulft
     if (missing(outputdir)) {
-      outputfolder = paste(datadir,".Calibrated",sep="")
+      outputfolder = paste(datadir,"_Calibrated",sep="")
       dir.create(file.path(outputfolder))
     }
 
@@ -95,49 +86,82 @@ recalibrate = function(datadir,
                               windowsizes = windowsizes)
 
       # Read in the current values from the file.
-      Lines=readLines(Binfile,-1) # Reads the bin file to the point where the calibration data is.
-      XOffset=Lines[49];  XGain=Lines[48]
-      YOffset=Lines[51];  YGain=Lines[50]
-      ZOffset=Lines[53];  ZGain=Lines[52]
+      Lines = readLines(Binfile,-1) # Reads the bin file to the point where the calibration data is.
+      XOffset = Lines[49];  XGain = Lines[48]
+      YOffset = Lines[51];  YGain = Lines[50]
+      ZOffset = Lines[53];  ZGain = Lines[52]
 
       # Extracting just the numerical value. - Offset
-      XOffsetN=as.numeric(unlist(strsplit(XOffset,"x offset:"))[2])
-      YOffsetN=as.numeric(unlist(strsplit(YOffset,"y offset:"))[2])
-      ZOffsetN=as.numeric(unlist(strsplit(ZOffset,"z offset:"))[2])
+      XOffsetN = as.numeric(unlist(strsplit(XOffset, "x offset:"))[2])
+      YOffsetN = as.numeric(unlist(strsplit(YOffset, "y offset:"))[2])
+      ZOffsetN = as.numeric(unlist(strsplit(ZOffset, "z offset:"))[2])
 
       # Extracting just the numerical value for the Gain
-      XGainN=as.numeric(unlist(strsplit(XGain,"x gain:"))[2])
-      YGainN=as.numeric(unlist(strsplit(YGain,"y gain:"))[2])
-      ZGainN=as.numeric(unlist(strsplit(ZGain,"z gain:"))[2])
+      XGainN = as.numeric(unlist(strsplit(XGain, "x gain:"))[2])
+      YGainN = as.numeric(unlist(strsplit(YGain, "y gain:"))[2])
+      ZGainN = as.numeric(unlist(strsplit(ZGain, "z gain:"))[2])
 
       # Calculating the New values using the calibration values- Rounding to whole numbers
       if (C$offset[1] != 0){
-        XOffsetNew=round((XOffsetN * C$offset[1]) * 25.6)
-        Lines[49]=paste("x offset:",sep="", XOffsetNew)}
+        XOffsetNew = round(XOffsetN - C$offset[1] * 256 * 100)
+        Lines[49] = paste("x offset:", sep = "", XOffsetNew)}
 
       if (C$offset[2] != 0){
-        YOffsetNew=round((YOffsetN * C$offset[2]) * 25.6)
-        Lines[51]=paste("y offset:",sep="", YOffsetNew)
+        YOffsetNew = round(YOffsetN -  C$offset[2] * 256 * 100)
+        Lines[51] = paste("y offset:", sep = "", YOffsetNew)
       }
 
       if (C$offset[2] != 0){
-        ZOffsetNew=round((ZOffsetN * C$offset[3]) * 25.6)
-        Lines[53]=paste("z offset:",sep="", ZOffsetNew)
+        ZOffsetNew = round(ZOffsetN - C$offset[3] * 256 * 100)
+        Lines[53] = paste("z offset:", sep = "", ZOffsetNew)
       }
 
       if (C$scale[1] != 0){
-        XGainNew=round(XGainN / C$scale[1])
-        Lines[48]=paste("x gain:",sep="", XGainNew)
+        XGainNew = round(XGainN / C$scale[1])
+        Lines[48] = paste("x gain:", sep = "", XGainNew)
       }
 
       if (C$scale[2] != 0){
-        YGainNew=round(YGainN / C$scale[2])
-        Lines[50]=paste("y gain:",sep="", YGainNew)
+        YGainNew = round(YGainN / C$scale[2])
+        Lines[50] = paste("y gain:", sep = "", YGainNew)
         }
       if (C$scale[3] != 0){
-        ZGainNew=round(ZGainN / C$scale[3])
-        Lines[52]=paste("z gain:",sep="", ZGainNew)
+        ZGainNew = round(ZGainN / C$scale[3])
+        Lines[52] = paste("z gain:", sep = "", ZGainNew)
       }
+
+      # Changning the number of pages
+      # Here we need to check the npages is correct by grabbing the sequence number from the bottom of the file.
+      # Checking npages are equal - Had to move to after the connection is clsoed to reopen the connection
+
+      con <- file(Binfile)
+      len = length(readLines(con))
+
+      try({
+        H = header.info(Binfile)
+
+        npages_check = unlist(strsplit(scan(con,
+                                            skip = (len-8),
+                                            what = "",
+                                            quiet = TRUE,
+                                            nlines = 1,
+                                            sep = "\n"), ":"))[2]
+
+        if (as.numeric(unlist(H$Value[16])) > (as.numeric(npages_check) + 1)){
+          cat(as.numeric(unlist(H$Value[16])) - (as.numeric(npages_check) + 1))
+          cat(" Missing records detected")
+          Lines[58] = paste0("Number of Pages:", (as.numeric(npages_check) + 1))
+        }
+
+        if (as.numeric(unlist(H$Value[16])) < (as.numeric(npages_check) + 1)){
+          cat((as.numeric(npages_check) + 1) - as.numeric(unlist(H$Value[16])))
+          cat(" Additional records detected ")
+          Lines[58] = paste0("Number of Pages:", (as.numeric(npages_check) + 1))
+        }
+
+      })
+
+      close(con)
 
       # Creating the correct file name
       filename = fnames[i]

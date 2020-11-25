@@ -3,6 +3,13 @@
 \name{GRtime}
 \alias{GRtime}
 \alias{as.GRtime}
+\alias{c.GRtime}
+\alias{format.GRtime}
+\alias{Axis.GRtime}
+\alias{axis.GRtime}
+\alias{Ops.GRtime}
+\alias{pretty.GRtime}
+\alias{print.GRtime}
 \title{Date time handling for the GENEAread package.}
 \usage{
 as.GRtime(x, format = NULL, ...)
@@ -56,11 +63,11 @@ as.GRtime("00:01")
 convert.time(1:10)
 convert.time(1:10*1000)
 #we add a different default format
-convert.time(1:10*1000, "\\\%H:\\\%M:\\\%OS3") -> t
+convert.time(1:10*1000, "\%H:\%M:\%OS3") -> t
 t
 str(t)
 # we override format with our own
-format(t, format = "\\\%a \\\%d/\\\%m/\\\%y \\\%H:\\\%M:\\\%OS3")
+format(t, format = "\%a \%d/\%m/\%y \%H:\%M:\%OS3")
 
 # plot calls axis.GRtime automatically. Notice
 # that the format attribute is used.

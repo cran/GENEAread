@@ -4,13 +4,26 @@
 \name{GENEAread-package}
 \alias{GENEAread-package}
 \alias{read.bin}
+\alias{GENEAread}
 \title{A package to process binary accelerometer output files.}
 \usage{
-read.bin(binfile, outfile = NULL, start = NULL, end = NULL,
-  Use.Timestamps = FALSE, verbose = TRUE, do.temp = TRUE,
-  do.volt = TRUE, calibrate = TRUE, downsample = NULL, blocksize,
-  virtual = FALSE, mmap.load = (.Machine$sizeof.pointer >= 8),
-  pagerefs = TRUE, ...)
+read.bin(
+  binfile,
+  outfile = NULL,
+  start = NULL,
+  end = NULL,
+  Use.Timestamps = FALSE,
+  verbose = TRUE,
+  do.temp = TRUE,
+  do.volt = TRUE,
+  calibrate = TRUE,
+  downsample = NULL,
+  blocksize,
+  virtual = FALSE,
+  mmap.load = (.Machine$sizeof.pointer >= 8),
+  pagerefs = TRUE,
+  ...
+)
 }
 \arguments{
 \item{binfile}{A filename of a file to process.}
